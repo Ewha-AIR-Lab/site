@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ARI Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/symbols/ewha.png">
+<script>var _v=Math.floor(Date.now()/6e5);document.write('<link rel="stylesheet" href="styles/style.css?v='+_v+'">');</script>
+</head>
+<body>
+
+<nav id="topnav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="#" style="display:flex;align-items:center;gap:.6rem;text-decoration:none;">
+        <!-- <div class="nav-mark"><img src="assets/symbols/ewha.png" alt="Ewha" style="width:100%;height:100%;object-fit:contain;"></div> -->
+        <span class="nav-name"><span>ARI Lab @ Ewha</span></span>
+      </a>
+    </div>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#"             class="nav-btn" id="nav-home">Home</a></li>
+      <!-- <li><a href="#projects"  class="nav-btn" id="nav-projects">Projects</a></li> -->
+      <li><a href="#members"      class="nav-btn" id="nav-members">Members</a></li>
+      <li><a href="#publications" class="nav-btn" id="nav-publications">Publications</a></li>
+      <li><a href="#news"         class="nav-btn" id="nav-news">News</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<main id="page-content"></main>
+
+<footer class="site-ft" id="site-footer"></footer>
+
+<!-- Data & app — cache-busting version changes every 10 minutes (matches GitHub Pages' cache) -->
+<script>
+['data/lab.js','data/publications.js','data/members.js',
+ 'data/news.js','data/projects.js','js/main.js'].forEach(function(s){
+  document.write('<script src="'+s+'?v='+_v+'"><\/script>');
+});
+</script>
+
+</body>
+</html>

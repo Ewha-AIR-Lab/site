@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FK 3D — ARI Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kinematics.css">
+<link rel="stylesheet" href="../ui.css">
+</head>
+<body>
+
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
+
+<div class="page">
+  <h1 class="page-title">[3D] Forward Kinematics</h1>
+  <p class="page-desc">
+    Set the joint angles and see where the robot's hand ends up.
+  </p>
+
+  <div class="main-grid">
+
+    <!-- 3D Visualization -->
+    <div class="viz-col">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Visualization</div>
+          <div class="btn-row">
+            <label class="opacity-ctl" title="Robot opacity">Robot
+              <input type="range" id="sl-alpha" min="0.1" max="1" step="0.05" value="0.6" oninput="setRobotAlpha(this.value)">
+              <span id="lbl-alpha">60%</span>
+            </label>
+            <button class="btn on" id="btn-frames" onclick="toggleFrames()">Frames</button>
+            <button class="btn on" id="btn-labels" onclick="toggleLabels()">Labels</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:.75rem;">
+          <div class="viz-wrap" id="viz-wrap">
+            <canvas id="viz3d"></canvas>
+          </div>
+          <div class="chain">
+            <span class="chain-lbl">Chain</span>
+            <button class="btn" onclick="setStep(K - 1)" aria-label="Previous step">&#9664;</button>
+            <span class="chain-eq" id="chain-eq"></span>
+            <button class="btn" onclick="setStep(K + 1)" aria-label="Next step">&#9654;</button>
+            <button class="btn" onclick="setStep(N)">All</button>
+          </div>
+          <p class="hint">Drag to orbit &middot; Scroll to zoom &middot; Right-drag to pan &middot; X <span style="color:#c4392f">■</span> Y <span style="color:#2e8b4f">■</span> Z <span style="color:#2f66c4">■</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+
+      <!-- Joint Values -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Joint Values <span class="card-sub">θ<sub>i</sub> = q<sub>i</sub></span></div></div>
+        <div class="card-body" id="joint-sliders"></div>
+      </div>
+
+      <!-- End-Effector Pose -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">End-Effector Pose <span class="card-sub">frame {7} in {0}</span></div></div>
+        <div class="card-body">
+          <div class="info-row">
+            <span class="info-label">Position (x, y, z)</span>
+            <span class="info-val" id="ee-xyz">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Orientation (roll, pitch, yaw)</span>
+            <span class="info-val" id="ee-rpy">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transformation Matrices -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Transformation Matrices</div>
+          <div class="seg">
+            <button class="btn" id="btn-sym" onclick="setMatMode('sym')">Symbolic</button>
+            <button class="btn on" id="btn-num" onclick="setMatMode('num')">Numeric</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mat-legend">
+            <span><i style="background:#fef3c7"></i>rotation R</span>
+            <span><i style="background:#dbeafe"></i>translation p</span>
+            <span><i style="background:#f1f5f9"></i>homogeneous row</span>
+          </div>
+          <div id="mats"></div>
+        </div>
+      </div>
+
+    </div><!-- /side-panel -->
+  </div><!-- /main-grid -->
+</div><!-- /page -->
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="scene3d.js"></script>
+<script src="iiwa.js"></script>
+<script>
+'use strict';
+
+
+const PRESETS = {
+  'Zero':      [0, 0, 0, 0, 0, 0, 0],
+  'Ready':     [0, 30, 0, -60, 0, 90, 0],
+  'Elbow out': [0, 30, 70, -60, 0, 90, 0],
+  'Reach':     [50, 60, 0, -30, 0, 50, 30],
+};
+const DEFAULT = PRESETS['Ready'];
+
+// ── State ──
+const Q = DEFAULT.slice();   // joint angles in degrees
+let K = N;                   // chain step: show A1..AK
+let HL = -1;                 // highlighted frame (from hover), -1 = none
+let matMode = 'num';
+let showLabels = true;
+let showFrames = true;
+let robotAlpha = 0.6;        // robot shell opacity, so frames inside joints stay visible
+
+// ── Joint slider UI (built once) ──
+(function buildSliders() {
+  const host = document.getElementById('joint-sliders');
+  let html = '';
+  for (let i = 0; i < N; i++) {
+    html += `
+      <div class="sl-line">
+        <span class="nm">q<sub>${i + 1}</sub></span>
+        <input type="range"  id="sl-q${i}"  min="${-JOINT_LIMITS[i]}" max="${JOINT_LIMITS[i]}" step="1" value="0" oninput="onSlider(${i}, this)">
+        <input type="number" id="num-q${i}" min="${-JOINT_LIMITS[i]}" max="${JOINT_LIMITS[i]}" step="1" value="0" oninput="onNumber(${i}, this)" onchange="onNumberCommit(${i}, this)">
+        <span class="unit">°</span>
+      </div>`;
+  }
+  html += `<div class="preset-row"><div class="btn-row">` +
+    Object.keys(PRESETS).map(n => `<button class="btn" onclick="goPreset('${n}')">${n}</button>`).join('') +
+    `<button class="btn" onclick="resetAll()" style="margin-left:auto;">Reset</button></div></div>`;
+  host.innerHTML = html;
+})();
+
+// ── Symbolic DH matrix (α is always 0 or ±90° for the iiwa, so entries simplify) ──
+function symTerm(coef, s) {
+  if (Math.abs(coef) < 1e-9) return '0';
+  if (Math.abs(coef - 1) < 1e-9) return s;
+  if (Math.abs(coef + 1) < 1e-9) return '−' + s;
+  return coef + '·' + s;
+}
+function symDH(i) {
+  const { d, a, alpha } = DH[i], n = i + 1;
+  const ca = Math.round(Math.cos(alpha * D2R)), sa = Math.round(Math.sin(alpha * D2R));
+  const c = 'c' + SUB[n], s = 's' + SUB[n];
+  const aS = a === 0 ? null : 'a' + SUB[n], dS = d === 0 ? '0' : 'd' + SUB[n];
+  return [
+    [c, symTerm(-ca, s), symTerm(sa, s), aS ? `${aS}·${c}` : '0'],
+    [s, symTerm(ca, c), symTerm(-sa, c), aS ? `${aS}·${s}` : '0'],
+    ['0', String(sa).replace('-', '−'), String(ca).replace('-', '−'), dS],
+    ['0', '0', '0', '1'],
+  ];
+}
+
+// ── Panels ──
+function renderMat(id, m, symbolic) {
+  const vals = symbolic || rows(m).map(r => r.map(v => fmt(v)));
+  document.getElementById(id).innerHTML = vals.map((r, ri) => r.map((v, ci) => {
+    const cls = ri === 3 ? 'hom' : ci === 3 ? 'tr' : 'rot';
+    return `<div class="mat-cell ${cls}" title="${v}">${v}</div>`;
+  }).join('')).join('');
+}
+
+(function buildMatBlocks() {
+  let html = '';
+  for (let i = 0; i < N; i++) {
+    html += `<div class="mat-block" data-frame="${i + 1}">
+      <div class="mat-label"><span>A<sub>${i + 1}</sub> = T<sub>${i}${i + 1}</sub></span><span class="sub" id="mat-sub-${i}"></span></div>
+      <div class="mat-grid4" id="mat-a${i}"></div></div>`;
+  }
+  html += `<div class="mat-block cum" data-frame="cum">
+    <div class="mat-label"><span id="cum-label"></span><span class="sub" id="cum-sub"></span></div>
+    <div class="mat-grid4" id="mat-cum"></div></div>`;
+  document.getElementById('mats').innerHTML = html;
+
+  // hover → highlight the matching frame in 3D
+  document.querySelectorAll('[data-frame]').forEach(el => {
+    el.addEventListener('mouseenter', () => setHL(el.dataset.frame === 'cum' ? K : +el.dataset.frame));
+    el.addEventListener('mouseleave', () => setHL(-1));
+  });
+})();
+
+function setHL(k) {
+  HL = k;
+  document.querySelectorAll('.mat-block[data-frame]').forEach(el => {
+    const f = el.dataset.frame === 'cum' ? K : +el.dataset.frame;
+    el.classList.toggle('hl', k >= 0 && f === k);
+  });
+  update();
+}
+
+function renderChainEq() {
+  const terms = Array.from({ length: N }, (_, i) =>
+    `<span class="${i < K ? 'done' : 'todo'}">A<sub>${i + 1}</sub></span>`).join('<span class="todo">·</span>');
+  document.getElementById('chain-eq').innerHTML = `T<sub>0${K}</sub> = ${K === 0 ? 'I &nbsp;' : ''}${terms}`;
+}
+
+// ── Main update ──
+function update() {
+  const { A, T } = computeFK(Q);
+  updateRobot(T, { K, HL, showFrames, showLabels, alpha: robotAlpha });
+
+  // EE pose
+  const Te = T[N], e = Te.elements;
+  const p = new THREE.Vector3().setFromMatrixPosition(Te);
+  document.getElementById('ee-xyz').textContent = `(${fmt(p.x)}, ${fmt(p.y)}, ${fmt(p.z)}) m`;
+  const r11 = e[0], r21 = e[1], r31 = e[2], r32 = e[6], r33 = e[10];
+  const yaw = Math.atan2(r21, r11), pitch = Math.atan2(-r31, Math.hypot(r32, r33)), roll = Math.atan2(r32, r33);
+  document.getElementById('ee-rpy').textContent = `(${fmtDeg(roll / D2R)}, ${fmtDeg(pitch / D2R)}, ${fmtDeg(yaw / D2R)})`;
+
+  // matrices
+  for (let i = 0; i < N; i++) {
+    renderMat(`mat-a${i}`, A[i], matMode === 'sym' ? symDH(i) : null);
+    document.getElementById(`mat-sub-${i}`).textContent = `θ${SUB[i + 1]} = ${fmtDeg(Q[i])}`;
+    document.querySelector(`.mat-block[data-frame="${i + 1}"]`).style.opacity = i < K ? 1 : 0.45;
+  }
+  document.getElementById('cum-label').innerHTML = K === 0 ? 'T<sub>00</sub> = I'
+    : `T<sub>0${K}</sub> = ` + Array.from({ length: K }, (_, i) => `A<sub>${i + 1}</sub>`).join('·');
+  document.getElementById('cum-sub').textContent = matMode === 'sym' ? 'numeric' : '';
+  renderMat('mat-cum', T[K], null);
+
+
+  // sliders / labels (never overwrite a number box the user is typing in)
+  for (let i = 0; i < N; i++) {
+    document.getElementById(`sl-q${i}`).value = Q[i];
+    const num = document.getElementById(`num-q${i}`);
+    if (document.activeElement !== num) num.value = Math.round(Q[i]);
+  }
+  renderChainEq();
+}
+
+// ── UI handlers ──
+function onSlider(i, el) { stopTween(); Q[i] = parseFloat(el.value); update(); }
+function onNumber(i, el) {
+  const v = parseFloat(el.value);
+  if (isNaN(v)) return;
+  stopTween();
+  Q[i] = Math.max(-JOINT_LIMITS[i], Math.min(JOINT_LIMITS[i], v));
+  update();
+}
+function onNumberCommit(i, el) { el.value = Math.round(Q[i]); }   // tidy the box once editing ends
+
+function resetAll() { setStep(N); goPreset('Ready'); }
+function setStep(k) { K = Math.max(0, Math.min(N, k)); update(); }
+function setMatMode(m) {
+  matMode = m;
+  document.getElementById('btn-sym').classList.toggle('on', m === 'sym');
+  document.getElementById('btn-num').classList.toggle('on', m === 'num');
+  update();
+}
+function toggleFrames() {
+  showFrames = !showFrames;
+  document.getElementById('btn-frames').classList.toggle('on', showFrames);
+  update();
+}
+function setRobotAlpha(v) {
+  robotAlpha = parseFloat(v);
+  document.getElementById('lbl-alpha').textContent = Math.round(robotAlpha * 100) + '%';
+  update();
+}
+function toggleLabels() {
+  showLabels = !showLabels;
+  document.getElementById('btn-labels').classList.toggle('on', showLabels);
+  update();
+}
+
+// smooth move to a preset
+let tween = null;
+function stopTween() { if (tween) { cancelAnimationFrame(tween); tween = null; } }
+function goPreset(name) {
+  stopTween();
+  const from = Q.slice(), to = PRESETS[name], t0 = performance.now(), dur = 700;
+  (function step(now) {
+    const t = Math.min(1, (now - t0) / dur), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    for (let i = 0; i < N; i++) Q[i] = from[i] + (to[i] - from[i]) * e;
+    update();
+    tween = t < 1 ? requestAnimationFrame(step) : null;
+  })(t0);
+}
+
+
+update();
+</script>
+</body>
+</html>

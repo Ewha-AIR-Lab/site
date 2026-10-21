@@ -1,0 +1,46 @@
+// ── Lab Info ──
+// Edit this file to update the lab intro and contact/address shown in the footer.
+
+const LAB_INFO = {
+
+  // Short name shown in the nav bar
+  short_name: "ARI Lab @ Ewha",
+
+  // Full name shown in the hero and footer
+  full_name: "Advanced Robotics & Intelligence Lab",
+
+  // Paragraph shown under the hero title on the home page
+  intro: "We focus on building <B>intelligent robotic systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. ARI Lab advances <B>Robot Intelligence for the Real World</B>!",
+
+  // Department / university line shown in the footer
+  department: "Dept. of Artificial Intelligence",
+  university:  "Ewha Womans University, Seoul, Korea",
+
+  // Mailing address shown in the footer (one line per entry)
+  address: [
+    "ECC B130-1, 52, Ewhayeodae-gil, Seodaemun-gu, Seoul, 03760 Republic of Korea",
+  ],
+
+  // Phone number shown in the footer
+  phone: "+82-2-3277-5044",
+
+  // Copyright year (update annually)
+  copyright_year: "2026",
+
+  // Keyword chips shown below the hero intro (emoji + label, no link)
+  keywords: [
+    { emoji: "", label: "Robot Intelligence" },
+    { emoji: "", label: "Human-Robot Interaction" },
+    { emoji: "", label: "Motion Planning" },
+    // { emoji: "🛞", label: "Autonomous Navigation" },
+    // { emoji: "🦾", label: "Robot Manipulation" },
+  ],
+
+  // Hero slideshow images — add more entries to show multiple slides with dots
+  // Each entry: { src: "path", caption: "short text" }  (caption optional)
+  gallery: [
+    { src: "assets/gallery/ewha.gif",     caption: "Ewha Womans University, Seoul, KR" },
+    { src: "assets/gallery/IROS2026.jpg", caption: "UMD · GMU · Ewha reunion @ IEEE IROS 2026!" },
+    { src: "assets/gallery/ICRA2026_web.jpg", caption: "Representing Ewha @ IEEE ICRA 2026!" },
+  ],
+};
