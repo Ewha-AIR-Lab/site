@@ -102,7 +102,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 
 /* ════ HOME ════ */
 .hero { background: var(--green); padding: 4.5rem 0 4rem; position: relative; overflow: hidden; }
-.hero::after { content: 'ARI Lab'; position: absolute; right: -1rem; top: 50%; transform: translateY(-50%); font-family: 'EB Garamond', serif; font-size: 14rem; font-weight: 600; line-height: 1; color: rgba(255,255,255,.04); pointer-events: none; user-select: none; }
+.hero::after { content: 'AIR Lab'; position: absolute; right: -1rem; top: 50%; transform: translateY(-50%); font-family: 'EB Garamond', serif; font-size: 14rem; font-weight: 600; line-height: 1; color: rgba(255,255,255,.04); pointer-events: none; user-select: none; }
 .hero-grid { display: block; position: relative; }
 .hero-dept { font-size: .75rem; text-transform: uppercase; letter-spacing: .14em; color: var(--yg); font-weight: 600; font-family: 'IBM Plex Mono', monospace; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
 .hero-dept::before { content: ''; width: 20px; height: 1px; background: var(--yg); }

@@ -4,13 +4,13 @@
 const LAB_INFO = {
 
   // Short name shown in the nav bar
-  short_name: "ARI Lab @ Ewha",
+  short_name: "AIR Lab @ Ewha",
 
   // Full name shown in the hero and footer
-  full_name: "Advanced Robotics & Intelligence Lab",
+  full_name: "Advanced Intelligent Robotics Lab",
 
   // Paragraph shown under the hero title on the home page
-  intro: "We focus on building <B>intelligent robotic systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. ARI Lab advances <B>Robot Intelligence for the Real World</B>!",
+  intro: "We focus on building <B>intelligent robotic systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. AIR Lab advances <B>Robot Intelligence for the Real World</B>!",
 
   // Department / university line shown in the footer
   department: "Dept. of Artificial Intelligence",

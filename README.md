@@ -1,6 +1,6 @@
-# ARI Lab Website
+# AIR Lab Website
 
-Website for the Advanced Robotics & Intelligence Lab at Ewha Womans University.
+Website for the Advanced Intelligent Robotics Lab at Ewha Womans University.
 
 ---
 

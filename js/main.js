@@ -68,7 +68,7 @@ function setActiveNav(page) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const el = document.getElementById(NAV_MAP[page]);
   if (el) el.classList.add('active');
-  document.title = 'ARI Lab @ Ewha';
+  document.title = 'AIR Lab @ Ewha';
   document.getElementById('nav-links').classList.remove('open');
   document.getElementById('hamburger').classList.remove('open');
 }
@@ -118,8 +118,8 @@ function renderHome() {
       <div class="wrap hero-grid">
         <div>
           <BR><BR><BR>
-          <h1 class="hero-title fi fi2">Advanced Robotics<br>&amp; Intelligence Lab</h1>
-          <p class="hero-abbr fi fi2">ARI Lab @ Ewha</p>
+          <h1 class="hero-title fi fi2">Advanced Intelligent<br>Robotics Lab</h1>
+          <p class="hero-abbr fi fi2">AIR Lab @ Ewha</p>
           <p class="hero-desc fi fi3">${LAB_INFO.intro}</p>
           <div class="hero-kws fi fi3">${(LAB_INFO.keywords||[]).map(k=>`<span class="hero-kw">${k.emoji} ${k.label}</span>`).join('')}</div>
         </div>
@@ -607,7 +607,7 @@ function renderFooter() {
         <div class="ft-uni">${LAB_INFO.department}<br>${LAB_INFO.university}</div>
       </div>
     </div>
-    <div class="ft-bottom"><span>&copy; ${LAB_INFO.copyright_year} ARI Lab, Ewha Womans University</span></div>`;
+    <div class="ft-bottom"><span>&copy; ${LAB_INFO.copyright_year} AIR Lab, Ewha Womans University</span></div>`;
 }
 
 // ─────────────────────────────────────────────

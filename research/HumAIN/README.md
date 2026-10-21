@@ -1,7 +1,7 @@
 # HumAIN — project page
 
 A nerfies-style project page for **HumAIN: Human-Aware Implicit Social Robot Navigation**
-(IROS 2026 submission), styled to match the ARI Lab site.
+(IROS 2026 submission), styled to match the AIR Lab site.
 
 Live at: `ewha-airlab.github.io/research/humain/`
 

@@ -52,7 +52,7 @@
   const nav = document.getElementById('course-nav');
   const caret = '<svg viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
   nav.innerHTML = `
-    <a href="/">ARI Lab @ Ewha</a>
+    <a href="/">AIR Lab @ Ewha</a>
     <span class="sep">/</span>
     <span class="cur">Intelligent Robotics</span>
     <nav class="cn-menu">${MENU.map(([group, pages]) => `
@@ -80,7 +80,7 @@
     if (document.getElementById('course-footer')) return;
     const f = document.createElement('footer');
     f.id = 'course-footer';
-    f.innerHTML = `<span>© ${new Date().getFullYear()} Daeun Song</span><a href="/">ARI Lab @ Ewha</a>`;
+    f.innerHTML = `<span>© ${new Date().getFullYear()} Daeun Song</span><a href="/">AIR Lab @ Ewha</a>`;
     document.body.appendChild(f);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addFooter); else addFooter();

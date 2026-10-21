@@ -59,7 +59,7 @@ const NEWS_DATA = [
   {
     date:  "2026.03",
     cat:   "news",
-    title: "ARI Lab website now online!"
+    title: "AIR Lab website now online!"
   },
 
   {
